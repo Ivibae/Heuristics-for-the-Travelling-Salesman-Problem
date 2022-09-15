@@ -1,1 +1,32 @@
 # Heuristics-for-the-Travelling-Salesman-Problem
+
+In this project I analyse 4 different algorithms for the famous Travelling Salesman Problem: the Swap Heuristic algorithm, the 2-Opt Heuristic algorithm, the greedy algorithm and the Nearest Insertion algorithm. This project (found in graph.py) can handle both Euclidean graphs and other more general graphs. When giving the program an Euclidean graph, those Euclidean file instances will contain just the points/nodes of the graph, each point described
+as a pair of integers (the x and y coordinates) on a single line, without any formatting. For the more general graphs, each line of the input file describes one edge of the graph, each line containing three integers, these being the first endpoint i, the second endpoint j and the given weight/distance for the edge between i and j. See twelvenodes for an example of this kind of input file.
+
+
+For the Nearest Insertion algorithm, I have obtained the idea from the paper “Approximate Traveling Salesman Algorithms” by B.Golden (1980). This paper briefly discusses several algorithms for the TSP, and I have used some ideas from the section of the Nearest Insertion algorithm. 
+
+This algorithm has a similar idea as the Greedy algorithm we have implemented before, but with a little improvement: instead of choosing the city that is closest to the last city that we have selected, we instead evaluate the city that is closest to any of the cities that have already been visited and we instead modify the path so that inserting the city between two existing nodes minimizes the distance added. Thus, we have that the Nearest Insertion algorithm follows the following structure:
+    1. We start with subgraph consisting of a sole node. We will use as the first node the initial city indexed 0, in order to follow the convention set by the algorithm Greedy. 
+    
+    2. We then find the node that is closer to the initial city we have and add it to the subtour. This second step is also like the second step in the Greedy Algorithm. 
+    
+    3. We then analyse the nodes that have not been used and are the closest to any of the nodes that we have used. We will call that closest node k. 
+    
+    4. We then calculate the distance that would be added for each pair of nodes (i, j) if we connect the node i to k, and k to the node j. In other words, if dijrepresents the distance between nodes i and j, we want to find which i, j minimise dik + dkj - dij and add that k in the subtour between the nodes i and j. 
+    
+    5. We can then repeat steps 3 and 4 until we complete the cycle. 
+    
+    A naïve implementation of this algorithm would end up running in O(n3 ) running time complexity, as we would iterate for each of the n nodes, and then in the worst case in the third step we would have to iterate through n/2 nodes outside the subtour and for each of those n/2 nodes we would need to calculate the distance between each of those points and each of the n/2 points inside the subtour. Thus, it would give a running time of O(n*n/2*n/2) = O(n3 /4) = O(n3 ). 
+    
+    However, after much thinking, I have managed to find a way around and bring the total running time complexity to O(n2 ). Instead of calculating the distance for each point outside the current subtour to each point inside the subtour, we can have an array where we store the minimum distance for each point outside the subtour to any point inside the current subtour (to whichever point is closer). Then, when we start the subtour we would have the distance for each point to the initial city 0 (the initial subtour). Then, for each node we add, we would iterate through all of the points that are outside the subtour and see if the minimum distance for that point has changed with the new added node or not. That way, instead of performing an operation that would end up being O(n3 ) in the worst case, we perform n times an operation that has constant running time of O(n). 
+    
+    We can now prove that the Nearest insertion algorithm I have implemented in the graph.py document has running time complexity of O(n 2 ). All the operations before the while loop run in O(n) time complexity, as we have all constant (O(1)) operations except for assigning the array of length n minimum_distances (which has running time of O(n) as you perform an O(1) operation for the n elements of the array) and the next line which finds the minimum of the minimum_distances array (which is also O(n) as you have to iterate through all the elements of the array to find the minimum). 
+    
+    We can then observe that we perform the while loop approximately n times. The first for loop we find inside the while loop is O(n), as the for loop iterates at most n times through O(1) operations. We are then followed by 4 operations before the next for loop, which together have time complexity of O(n), as they are all constant operations, except for finding the minimum, which for reasons discussed above, is O(n). The next for loop runs in O(n) time also, as we also perform at most n times the O(1) operation of appending constant operations. Finally, calculating the minimum takes O(n) running time, and inserting the current i is a constant operation. Thus, the while loop runs in 𝑛 ∙ 𝑂(𝑛 + 𝑛 + 3 + 𝑛 + 𝑛 + 1) = 𝑛 ∙ 𝑂(4𝑛 + 4) = 𝑛 ∙ 𝑂(𝑛) = 𝑂(𝑛 2 ). 
+    
+    We finally assign self.perm to the value of permutations, which is a constant operation. Thus, the total running time for the Nearest Insertion algorithm is 𝑂(𝑛) + 𝑂(𝑛 2 ) + 𝑂(1) = 𝑂(𝑛 2 + 𝑛 + 1) = 𝑂(𝑛 2 ). This algorithm usually performs a short tour, although it is not usually the optimal one. This is one of the advantages of this algorithm: it performs a fairly optimal tour in a relatively small time complexity O(n2 ). Another advantage of the Nearest Insertion Algorithm is that it is a relatively easy algorithm to implement, so it might reduce the complexity of the code. The main disadvantage would be that the solution we obtain is not usually the optimal one, and that other algorithms (although with a bigger running time) can either give you the optimal solution (which would only work for a small number of cities) or give you a result that is closer to the optimal solution. However, overall, I believe that this algorithm gives us a great tradeoff where we spend an acceptable amount of time (O(n2 )) and give us a solution which is close enough to the optimal solution.
+    
+    
+    #Experiments
+    
